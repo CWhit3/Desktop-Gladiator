@@ -25,25 +25,27 @@ import java.util.logging.Logger;
  * @author CWhite
  */
 class HealthBar extends Sprite{
-    int length = 100;
+    int length;
     
-    public void setLen(int len){
-        length = len;
+    public void setLen(Enemy en){
+        length = en.health;
     }
-    public HealthBar(int len) throws IOException{
-        setPicture(drawHealth(len));
+    public HealthBar(SpriteComponent sc, double x, double y, int len) throws IOException{
+        init(sc, x, y, len);
     }
     public void init(SpriteComponent sc, double x, double y, int len){
         setX(x);
         setY(y);
+        setPicture(drawHealth(len));
         sc.addSprite(this);
     }
     
     public Picture drawHealth(int len){
-        Image health = BasicFrame.createImage(len, 5);
+        Image health = BasicFrame.createImage(100, 5);
         Graphics gHealth = health.getGraphics();
         gHealth.setColor(Color.RED);
-        gHealth.fillRect(0, 0, len, 5);
+        if(len > 0)
+            gHealth.fillRect(0, 0, len, 5);
         Picture bar = new Picture(health);
         return bar;
     }
@@ -73,11 +75,10 @@ class Enemy extends Gladiator {
         setX(d.width/2);
         setY(200);
         try {
-            hb = new HealthBar(health);
+            hb = new HealthBar(sc, getX(), getY(), health);
         } catch (IOException ex) {
             Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
         }
-        hb.init(sc, getX(), getY() , health);
         sc.addSprite(this);
     }
     
@@ -86,15 +87,18 @@ class Enemy extends Gladiator {
     public void processEvent(SpriteCollisionEvent sce){
         if(sce.eventType == CollisionEventType.SPRITE){
             if(sce.sprite2 instanceof Gladiator){
-                
+                sce.sprite2.setVelX(sce.sprite2.getVelX() * -1);
+                sce.sprite2.setVelY(sce.sprite2.getVelY() * -1);
             }
         }
+    }
+    public void preMove(){
+        hb.setLen(this);
     }
     public void postMove() {
         if (this.health < 0) {
             setActive(false);
         }
-        hb.setLen(health);
          if (getY() < 400) {
             setY(400);
             setVelY(-getVelY());
