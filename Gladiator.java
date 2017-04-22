@@ -24,12 +24,20 @@ public class Gladiator extends Sprite implements Fighter{
     public int health;                                                          //variable for playable character health
     SpriteComponent sc;
     Dimension d;
+    WaveController wc;
     int range;
     
-    public Gladiator() throws IOException {
+    public Gladiator() throws IOException{
         Picture standing = new Picture("gladiator_standing.png");
         setPicture(standing);
         this.health = 500;
+        this.range = 75;
+    }
+    public Gladiator(WaveController wc) throws IOException {
+        Picture standing = new Picture("gladiator_standing.png");
+        setPicture(standing);
+        this.health = 500;
+        this.wc = wc;
         this.range = 75;
     }
     
@@ -77,6 +85,11 @@ public class Gladiator extends Sprite implements Fighter{
     }
     
     public void postMove() {
+        
+        if(wc.isActive()){
+            setVelX(0);
+            setVelY(0);
+        }
         setVelX(getVelX() * 0.9);                                               //buffering of movement in order to make walking gradually stop
         setVelY(getVelY() * 0.9);
         checkBounds();

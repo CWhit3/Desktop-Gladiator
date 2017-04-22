@@ -67,11 +67,13 @@ class Enemy extends Gladiator {
     double frameCount;                                                          //used to normalize velocity settings
     HealthBar hb = null;
     Score s;                                                                    //reference to score used to increment it upon death
+    WaveController wc;
     int value;
     
-    public Enemy(Score s, int health) throws IOException {  
+    public Enemy(Score s, int health, WaveController wc) throws IOException {  
         this.health = health;
         this.s = s;
+        this.wc = wc;
         value = 50;
         Picture enemy = new Picture("enemy_facingdown_drawn.png");
         setPicture(enemy);
@@ -96,17 +98,17 @@ class Enemy extends Gladiator {
             setY(500);
             setVelY(-getVelY());
         }
-         if(frameCount%60 == 0){                                                //refresh rate of velocity only done once every 60 frames
+         if(frameCount%60 == 0 && wc.isActive() == false){                                                //refresh rate of velocity only done once every 60 frames
         if (this.getX() > target.getX()) {
             setVelX(-speed);
         }
-        if (this.getX() < target.getX()) {
+        if (this.getX() < target.getX() && wc.isActive() == false) {
             setVelX(speed);
         }
-        if (this.getY() > target.getY()) {
+        if (this.getY() > target.getY() && wc.isActive() == false) {
             setVelY(-speed);
         }
-        if (this.getY() < target.getY()) {
+        if (this.getY() < target.getY() && wc.isActive() == false) {
             setVelY(speed);
         }
         if(Math.abs(getX() - target.getX()) < 20 && Math.abs(getY() - target.getY()) < 20)

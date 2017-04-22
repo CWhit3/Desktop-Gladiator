@@ -36,9 +36,9 @@ public class Main {
     boolean drawn = false;                                                      //Boolean for whether sword is drawn
     final ArrayList<Enemy> enemies = new ArrayList<>();                         //Enemy ArrayList
 
-    public void initializeEnemies(Gladiator champion, int round, Score s) throws IOException {
+    public void initializeEnemies(Gladiator champion, int round, Score s, WaveController wc) throws IOException {
         for (int i = 0; i < round; i++) {
-            enemies.add(new Enemy(s, 100));
+            enemies.add(new Enemy(s, 100, wc));
             enemies.get(i).init(sc, d);
             enemies.get(i).target = champion;
         }
@@ -49,13 +49,13 @@ public class Main {
 
         Arena arena = new Arena();                                              //Sprite that displays arena drawing
         arena.init(sc);
-
-        final Gladiator champion = new Gladiator();                             //Playable character
+        WaveController wc = new WaveController(d);
+        wc.init(sc);
+        final Gladiator champion = new Gladiator(wc);                             //Playable character
         champion.init(sc, d);
-
         UI ui = new UI();                                                       //Class containing the UI components, which include: HealthMeter, ScoreBanner, and Score sprites
         ui.init(sc, d, champion);
-        initializeEnemies(champion, 1, ui.returnScore());                       //call to initialize enemies. This will increment number of enemies after successive waves
+        initializeEnemies(champion, 1, ui.returnScore(), wc);                       //call to initialize enemies. This will increment number of enemies after successive waves
         
         bf.addKeyListener(new KeyAdapter() {                                    //KeyListener to handle user input
             @Override
