@@ -13,8 +13,11 @@ import basicgraphics.*;
 import gladiator.Enemy;
 import gladiator.Gladiator;
 import basicgraphics.images.Picture;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -24,157 +27,41 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
-class Arena extends Sprite {
-
-    public Arena() throws IOException {
-        Picture arena = new Picture("arena.png");
-        setPicture(arena);
-    }
-
-    public void init(SpriteComponent sc) {
-        sc.addSprite(this);
-    }
-}
-
-class HealthMeter extends Sprite {
-
-    Gladiator g;
-
-    public HealthMeter(Gladiator g) throws IOException {
-        Picture meter = new Picture("health_meter.png");
-        setPicture(meter);
-        this.g = g;
-    }
-
-    public void init(SpriteComponent sc, Dimension d) {
-        setX(0);
-        setY(d.height - getHeight());
-        sc.addSprite(this);
-        setDrawingPriority(1);
-    }
-
-    public void updateHealth(Gladiator g) throws IOException {
-        if(g.health < 50){
-            Picture hit10 = new Picture("health_meter_10hit.png");
-            setPicture(hit10);
-            return;
-        }
-        if(g.health < 100){
-            Picture hit9 = new Picture("health_meter_9hit.png");
-            setPicture(hit9);
-            return;
-                    
-        }
-        if(g.health < 150){
-            Picture hit8 = new Picture("health_meter_8hit.png");
-            setPicture(hit8);
-            return;
-        }
-        if(g.health < 200){
-            Picture hit7 = new Picture("health_meter_7hit.png");
-            setPicture(hit7);
-            return;
-        }
-        if(g.health < 250){
-            Picture hit6 = new Picture("health_meter_6hit.png");
-            setPicture(hit6);
-            return;
-        }
-        if(g.health < 300){
-            Picture hit5 = new Picture("health_meter_5hit.png");
-            setPicture(hit5);
-            return;
-        }
-        
-        if(g.health < 350){
-            Picture hit4 = new Picture("health_meter_4hit.png");
-            setPicture(hit4);
-            return;
-        }
-        
-        if(g.health < 400){
-            Picture hit3 = new Picture("health_meter_3hit.png");
-            setPicture(hit3);
-            return;
-        }
-        
-        if (g.health < 450) {
-            Picture hitTwice = new Picture("health_meter_2hit.png");
-            setPicture(hitTwice);
-            return;
-        }
-                
-        if (g.health < 500) {
-            Picture hitOnce = new Picture("health_meter_1hit.png");
-            setPicture(hitOnce);
-            return;
-        }   
-    }
-
-    public void preMove() {
-        try {
-            updateHealth(g);
-        } catch (IOException ex) {
-            Logger.getLogger(HealthMeter.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-}
-
-class ScoreBanner extends Sprite {
-
-    public ScoreBanner() throws IOException {
-        Picture score = new Picture("score_banner.png");
-        setPicture(score);
-    }
-
-    public void init(SpriteComponent sc, Dimension d) {
-        setX(d.width - getWidth());
-        setY(0);
-        sc.addSprite(this);
-        setDrawingPriority(1);
-    }
-}
-
 public class Main {
 
-    Dimension d = new Dimension(1000, 1000);
-    SpriteComponent sc = new SpriteComponent();
-    String swordStatus = "sheathed";
-    String direction = "down";
-    boolean drawn = false;
-     final ArrayList<Enemy> enemies = new ArrayList<>(); 
-    
-     
-     public void initializeEnemies(Gladiator champion, int round) throws IOException{        
-        for(int i = 0; i < round; i++){
-        enemies.add(new Enemy());
-        enemies.get(i).init(sc, d);
-        enemies.get(i).target = champion;
+    Dimension d = new Dimension(1000, 1000);                                    //Dimensions of window
+    SpriteComponent sc = new SpriteComponent();                                 //SpriteComponent
+    String swordStatus = "sheathed";                                            //String used to find frames regarding if sword is drawn
+    String direction = "down";                                                  //String used to find frames regarding direction gladiator is facing
+    boolean drawn = false;                                                      //Boolean for whether sword is drawn
+    final ArrayList<Enemy> enemies = new ArrayList<>();                         //Enemy ArrayList
+
+    public void initializeEnemies(Gladiator champion, int round, Score s) throws IOException {
+        for (int i = 0; i < round; i++) {
+            enemies.add(new Enemy(s, 100));
+            enemies.get(i).init(sc, d);
+            enemies.get(i).target = champion;
         }
     }
 
     public void run() throws IOException {
         final BasicFrame bf = new BasicFrame("Gladiators: Champion of the Coliseum");
 
-        Arena arena = new Arena();
+        Arena arena = new Arena();                                              //Sprite that displays arena drawing
         arena.init(sc);
 
-        final Gladiator champion = new Gladiator();
+        final Gladiator champion = new Gladiator();                             //Playable character
         champion.init(sc, d);
 
-        final HealthMeter meter = new HealthMeter(champion);
-        meter.init(sc, d);
-        final ScoreBanner score = new ScoreBanner();
-        score.init(sc, d);
-
-        initializeEnemies(champion, 3);
- 
-        meter.updateHealth(champion);
-        bf.addKeyListener(new KeyAdapter() {
+        UI ui = new UI();                                                       //Class containing the UI components, which include: HealthMeter, ScoreBanner, and Score sprites
+        ui.init(sc, d, champion);
+        initializeEnemies(champion, 1, ui.returnScore());                       //call to initialize enemies. This will increment number of enemies after successive waves
+        
+        bf.addKeyListener(new KeyAdapter() {                                    //KeyListener to handle user input
             @Override
             public void keyPressed(KeyEvent ke) {
                 switch (ke.getKeyCode()) {
-                    case KeyEvent.VK_Q:
+                    case KeyEvent.VK_Q:                                         //draws sword and changes sprite picture
                         drawn = !drawn;
                         try {
                             champion.drawWeapon(direction, drawn);
@@ -187,7 +74,7 @@ public class Main {
                             swordStatus = "drawn";
                         }
                         break;
-                    case KeyEvent.VK_W:
+                    case KeyEvent.VK_W:                                         //moves upwards and sets sprite picture to gladiator facing up
                         try {
                             direction = "up";
                             champion.turn(direction, swordStatus);
@@ -196,18 +83,17 @@ public class Main {
                             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         break;
-                    case KeyEvent.VK_S:
-                         {
-                            try {
-                                direction = "down";
-                                champion.turn(direction, swordStatus);
-                            } catch (IOException ex) {
-                                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            champion.setVelY(4);
+                    case KeyEvent.VK_S: {                                       //moves downwards and sets sprite picture to gladiator facing down
+                        try {
+                            direction = "down";
+                            champion.turn(direction, swordStatus);
+                        } catch (IOException ex) {
+                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        break;
-                    case KeyEvent.VK_A:
+                        champion.setVelY(4);
+                    }
+                    break;
+                    case KeyEvent.VK_A:                                         //moves left and sets sprite picture to gladiator facing left
                         direction = "left";
                         try {
                             champion.turn(direction, swordStatus);
@@ -217,7 +103,7 @@ public class Main {
                             break;
                         }
                         break;
-                    case KeyEvent.VK_D:
+                    case KeyEvent.VK_D:                                         //moves right and sets sprite picture to gladiator facing right
                         direction = "right";
                         try {
                             champion.turn(direction, swordStatus);
@@ -226,10 +112,10 @@ public class Main {
                             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         break;
-                    case KeyEvent.VK_SPACE:
-                        if(drawn == true){
-                            for(Enemy e: enemies){
-                                champion.attackClose(enemies, 100);
+                    case KeyEvent.VK_SPACE:                                     //if sword is drawn, attack enemies within range
+                        if (drawn == true) {
+                            for (Enemy e : enemies) {
+                                champion.attackClose(enemies, 25);
                             }
                         }
                         break;

@@ -17,10 +17,6 @@ public interface Fighter {
 //                dmg: the amount of damage taken
 //    called to cause damage to enemy fighter.
     public void attack(Gladiator g, double dmg);
-   
-//    @param: args f: the fighter to target
-//    called to target an enemy fighter, causing all movement to circumscribe fighter
-    public void target(Enemy f);
     
 //    @param args direction: the direction the fighter is facing
 //                drawn: is the fighter's weapon drawn?

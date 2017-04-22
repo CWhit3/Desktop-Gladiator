@@ -6,9 +6,7 @@
 package gladiator;
 
 import basicgraphics.BasicFrame;
-import basicgraphics.CollisionEventType;
 import basicgraphics.Sprite;
-import basicgraphics.SpriteCollisionEvent;
 import basicgraphics.SpriteComponent;
 import basicgraphics.images.Picture;
 import java.awt.Color;
@@ -17,93 +15,88 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author CWhite
  */
 class HealthBar extends Sprite{
-    int length;
     
-    public void setLen(Enemy en){
+    int length;                                                                 //length of enemy health bar
+    final double fullHealth = 100;                                              //final length for full health. used for ratios to determine health bar color.
+    Color c = Color.GREEN;                                                      //current color of health bar
+    
+    public void setLen(Enemy en){                                               //used to refresh length as enemy health decrements
         length = en.health;
+        if(length/fullHealth < 0.4){
+            c = Color.RED;
+            return;
+        }
+        if(length/fullHealth < 0.8)
+            c = Color.ORANGE;
     }
-    public HealthBar(SpriteComponent sc, double x, double y, int len) throws IOException{
-        init(sc, x, y, len);
-    }
-    public void init(SpriteComponent sc, double x, double y, int len){
+ 
+    public void init(SpriteComponent sc, double x, double y, int len){          //adds to SpriteComponent 
         setX(x);
         setY(y);
         setPicture(drawHealth(len));
         sc.addSprite(this);
     }
     
-    public Picture drawHealth(int len){
+    public Picture drawHealth(int len){                                         //renders new picture with graphics of health bar.
         Image health = BasicFrame.createImage(100, 5);
         Graphics gHealth = health.getGraphics();
-        gHealth.setColor(Color.RED);
+        gHealth.setColor(c);
         if(len > 0)
             gHealth.fillRect(0, 0, len, 5);
         Picture bar = new Picture(health);
         return bar;
     }
     
-    public void postMove(){
+    public void postMove(){                                                     //updates a new picture with a re-drawing of health bar so that it can be updated after taking damage.
         Picture health = drawHealth(length);
         setPicture(health);
+        
     }
 }
 
 class Enemy extends Gladiator {
 
-    Gladiator target;
-    double speed = 0.2;
-    double frameCount;
+    Gladiator target;                                                           //reference to playable character used for tracking
+    double speed = 0.2;                                                         //variable movement speed
+    double frameCount;                                                          //used to normalize velocity settings
     HealthBar hb = null;
-
-    public Enemy() throws IOException {
-        
-        this.health = 100;
+    Score s;                                                                    //reference to score used to increment it upon death
+    int value;
+    
+    public Enemy(Score s, int health) throws IOException {  
+        this.health = health;
+        this.s = s;
+        value = 50;
         Picture enemy = new Picture("enemy_facingdown_drawn.png");
         setPicture(enemy);
     }
 
-    public void init(SpriteComponent sc, Dimension d) {
+    public void init(SpriteComponent sc, Dimension d) {                         //adds to SpriteComponent, sets random position within window
         Random r = new Random();
-        setX(d.width/2);
-        setY(200);
-        try {
-            hb = new HealthBar(sc, getX(), getY(), health);
-        } catch (IOException ex) {
-            Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        setX(r.nextInt(d.width - (int)getWidth()));
+        setY(r.nextInt(d.height - (int)getHeight()));
+        hb = new HealthBar();                                                   //initializes healthbar over each enemy's head
+        hb.init(sc, getX(), getY(), health);
         sc.addSprite(this);
     }
     
-    
-
-    public void processEvent(SpriteCollisionEvent sce){
-        if(sce.eventType == CollisionEventType.SPRITE){
-            if(sce.sprite2 instanceof Gladiator){
-                sce.sprite2.setVelX(sce.sprite2.getVelX() * -1);
-                sce.sprite2.setVelY(sce.sprite2.getVelY() * -1);
-            }
-        }
-    }
-    public void preMove(){
-        hb.setLen(this);
-    }
     public void postMove() {
-        if (this.health < 0) {
+        hb.setLen(this);                                                        //updates healthbar length
+        if (this.health <= 0) {                                                 //actions upon death: deactivate sprite and increment score by enemy's "value"
             setActive(false);
+            s.score += value;
         }
-         if (getY() < 400) {
-            setY(400);
+         if (getY() < 500) {                                                    //restriction of movement about "rock" border
+            setY(500);
             setVelY(-getVelY());
         }
-         if(frameCount%60 == 0){
+         if(frameCount%60 == 0){                                                //refresh rate of velocity only done once every 60 frames
         if (this.getX() > target.getX()) {
             setVelX(-speed);
         }
@@ -120,7 +113,8 @@ class Enemy extends Gladiator {
             attack(target, 1);
         }
          frameCount++;
-         hb.setX(getX());
+         
+         hb.setX(getX());                                                       //sets new positions for healthbar as enemy moves
          hb.setY(getY() - 10);
     }
 }
