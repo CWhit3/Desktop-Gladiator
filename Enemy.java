@@ -15,6 +15,8 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -98,7 +100,21 @@ class Enemy extends Gladiator {
             setY(500);
             setVelY(-getVelY());
         }
-         if(frameCount%60 == 0 && wc.isActive() == false){                                                //refresh rate of velocity only done once every 60 frames
+         if(getVelY()<0){
+            try {
+                setPicture(new Picture("enemy_facingup_drawn.png"));
+            } catch (IOException ex) {
+                Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
+            }
+         }
+         else{
+            try {
+                setPicture(new Picture("enemy_facingdown_drawn.png"));
+            } catch (IOException ex) {
+                Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
+            }
+         }
+         if(frameCount%60 == 0 && wc.isActive() == false){                      //refresh rate of velocity only done once every 60 frames
         if (this.getX() > target.getX()) {
             setVelX(-speed);
         }

@@ -49,6 +49,7 @@ public class WaveController extends Sprite{
         setPicture(drawRound());
         setX(d.width/2 - getWidth()/2);
         setY(d.height/2 - getHeight()/2);
+        setDrawingPriority(1);
         sc.addSprite(this);
     }
     

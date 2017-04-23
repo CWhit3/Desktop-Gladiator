@@ -47,7 +47,6 @@ public class Gladiator extends Sprite implements Fighter{
         setX(d.getWidth() / 2);
         setY(d.getHeight() / 2 + 300);
         sc.addSprite(this);
-        setDrawingPriority(1);
     }
     
     public void attack(Gladiator g, double dmg) {                               //used by both Enemy and Gladiator to decrement the other's health
