@@ -26,24 +26,15 @@ public class Main {
     String direction = "down";                                                  //String used to find frames regarding direction gladiator is facing
     boolean drawn = false;                                                      //Boolean for whether sword is drawn
     final ArrayList<Enemy> enemies = new ArrayList<>();                         //Enemy ArrayList
-    Enemy scoreAccess = scoreEnemy();
-    
-    public Enemy scoreEnemy(){
-        try{
-            Enemy en = new Enemy();
-            return en;
-        } catch(IOException ioe){
-            System.out.println("IO Exception while creating new enemy");
-        }
-        return null;
-    }
-    
-    public void initializeEnemies(Gladiator champion, Score s, WaveController wc) throws IOException {
-        for (int i = 0; i < scoreAccess.enCount; i++) {
-            enemies.add(new Enemy(s, 100, wc));
-            enemies.get(i).init(sc, d);
-            enemies.get(i).target = champion;
-        }
+    static int enHealth = 100;
+    static int enValue = 50;
+
+    public void addEnemy(Gladiator champion, Score s) throws IOException {
+        Enemy en = new Enemy(s, enHealth, enValue);
+        enemies.add(en);
+        en.init(sc, d);
+        en.target = champion;
+        Enemy.setEnPresent(true);
     }
 
     public void run() throws IOException {
@@ -51,14 +42,12 @@ public class Main {
 
         Arena arena = new Arena();                                              //Sprite that displays arena drawing
         arena.init(sc);
-        WaveController wc = new WaveController(d);
-        wc.init(sc);
-        final Gladiator champion = new Gladiator(wc);                             //Playable character
+        final Gladiator champion = new Gladiator();                             //Playable character
         champion.init(sc, d);
-        UI ui = new UI();                                                       //Class containing the UI components, which include: HealthMeter, ScoreBanner, and Score sprites
+        final UI ui = new UI();                                                       //Class containing the UI components, which include: HealthMeter, ScoreBanner, and Score sprites
         ui.init(sc, d, champion);
-        initializeEnemies(champion, ui.returnScore(), wc);                       //call to initialize enemies. This will increment number of enemies after successive waves
-        
+        addEnemy(champion, ui.returnScore());                       //call to initialize enemies. This will increment number of enemies after successive waves
+
         bf.addKeyListener(new KeyAdapter() {                                    //KeyListener to handle user input
             @Override
             public void keyPressed(KeyEvent ke) {
@@ -118,6 +107,13 @@ public class Main {
                         if (drawn == true) {
                             for (Enemy e : enemies) {
                                 champion.attackClose(enemies, 25);
+                            }
+                        }
+                        if (!Enemy.returnEnPresent()) {
+                            try {
+                                addEnemy(champion, ui.returnScore());
+                            } catch (IOException ex) {
+                                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
                         break;
