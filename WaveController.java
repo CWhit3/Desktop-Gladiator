@@ -20,13 +20,18 @@ import java.awt.Image;
  * @author CWhite
  */
 public class WaveController extends Sprite{
-    Integer round = new Integer(1);
+    int i = 1;
+    Integer round = new Integer(i);
     String roundNum = round.toString();
     Dimension d;
     int duration = 0;
     
     public WaveController(Dimension d){
         this.d = d;
+    }
+    
+    public void setRound(int val){
+        i = val;
     }
     
     public String calcRound(int round){

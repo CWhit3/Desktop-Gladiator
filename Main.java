@@ -10,22 +10,13 @@ package gladiator;
  * @author CWhite
  */
 import basicgraphics.*;
-import gladiator.Enemy;
-import gladiator.Gladiator;
-import basicgraphics.images.Picture;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 
 public class Main {
 
@@ -35,9 +26,20 @@ public class Main {
     String direction = "down";                                                  //String used to find frames regarding direction gladiator is facing
     boolean drawn = false;                                                      //Boolean for whether sword is drawn
     final ArrayList<Enemy> enemies = new ArrayList<>();                         //Enemy ArrayList
-
-    public void initializeEnemies(Gladiator champion, int round, Score s, WaveController wc) throws IOException {
-        for (int i = 0; i < round; i++) {
+    Enemy scoreAccess = scoreEnemy();
+    
+    public Enemy scoreEnemy(){
+        try{
+            Enemy en = new Enemy();
+            return en;
+        } catch(IOException ioe){
+            System.out.println("IO Exception while creating new enemy");
+        }
+        return null;
+    }
+    
+    public void initializeEnemies(Gladiator champion, Score s, WaveController wc) throws IOException {
+        for (int i = 0; i < scoreAccess.enCount; i++) {
             enemies.add(new Enemy(s, 100, wc));
             enemies.get(i).init(sc, d);
             enemies.get(i).target = champion;
@@ -55,7 +57,7 @@ public class Main {
         champion.init(sc, d);
         UI ui = new UI();                                                       //Class containing the UI components, which include: HealthMeter, ScoreBanner, and Score sprites
         ui.init(sc, d, champion);
-        initializeEnemies(champion, 1, ui.returnScore(), wc);                       //call to initialize enemies. This will increment number of enemies after successive waves
+        initializeEnemies(champion, ui.returnScore(), wc);                       //call to initialize enemies. This will increment number of enemies after successive waves
         
         bf.addKeyListener(new KeyAdapter() {                                    //KeyListener to handle user input
             @Override

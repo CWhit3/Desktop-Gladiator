@@ -22,43 +22,45 @@ import java.util.logging.Logger;
  *
  * @author CWhite
  */
-class HealthBar extends Sprite{
-    
+class HealthBar extends Sprite {
+
     int length;                                                                 //length of enemy health bar
     final double fullHealth = 100;                                              //final length for full health. used for ratios to determine health bar color.
     Color c = Color.GREEN;                                                      //current color of health bar
-    
-    public void setLen(Enemy en){                                               //used to refresh length as enemy health decrements
+
+    public void setLen(Enemy en) {                                               //used to refresh length as enemy health decrements
         length = en.health;
-        if(length/fullHealth < 0.4){
+        if (length / fullHealth < 0.4) {
             c = Color.RED;
             return;
         }
-        if(length/fullHealth < 0.8)
+        if (length / fullHealth < 0.8) {
             c = Color.ORANGE;
+        }
     }
- 
-    public void init(SpriteComponent sc, double x, double y, int len){          //adds to SpriteComponent 
+
+    public void init(SpriteComponent sc, double x, double y, int len) {          //adds to SpriteComponent 
         setX(x);
         setY(y);
         setPicture(drawHealth(len));
         sc.addSprite(this);
     }
-    
-    public Picture drawHealth(int len){                                         //renders new picture with graphics of health bar.
+
+    public Picture drawHealth(int len) {                                         //renders new picture with graphics of health bar.
         Image health = BasicFrame.createImage(100, 5);
         Graphics gHealth = health.getGraphics();
         gHealth.setColor(c);
-        if(len > 0)
+        if (len > 0) {
             gHealth.fillRect(0, 0, len, 5);
+        }
         Picture bar = new Picture(health);
         return bar;
     }
-    
-    public void postMove(){                                                     //updates a new picture with a re-drawing of health bar so that it can be updated after taking damage.
+
+    public void postMove() {                                                     //updates a new picture with a re-drawing of health bar so that it can be updated after taking damage.
         Picture health = drawHealth(length);
         setPicture(health);
-        
+
     }
 }
 
@@ -71,8 +73,14 @@ class Enemy extends Gladiator {
     Score s;                                                                    //reference to score used to increment it upon death
     WaveController wc;
     int value;
-    
-    public Enemy(Score s, int health, WaveController wc) throws IOException {  
+    int round = 1;
+    static int enCount = 1;
+
+    public Enemy() throws IOException {
+
+    }
+
+    public Enemy(Score s, int health, WaveController wc) throws IOException {
         this.health = health;
         this.s = s;
         this.wc = wc;
@@ -81,58 +89,71 @@ class Enemy extends Gladiator {
         setPicture(enemy);
     }
 
+    public void setEnCount(int count) {
+        enCount = count;
+    }
+    
+    public int returnRound(){
+        return round;
+    }
+
     public void init(SpriteComponent sc, Dimension d) {                         //adds to SpriteComponent, sets random position within window
         Random r = new Random();
-        setX(r.nextInt(d.width - (int)getWidth()));
-        setY(r.nextInt(d.height - (int)getHeight()));
+        setX(r.nextInt(d.width - (int) getWidth()));
+        setY(r.nextInt(d.height - (int) getHeight()));
         hb = new HealthBar();                                                   //initializes healthbar over each enemy's head
         hb.init(sc, getX(), getY(), health);
         sc.addSprite(this);
     }
-    
+
     public void postMove() {
         hb.setLen(this);                                                        //updates healthbar length
         if (this.health <= 0) {                                                 //actions upon death: deactivate sprite and increment score by enemy's "value"
             setActive(false);
+            enCount--;
             s.score += value;
         }
-         if (getY() < 500) {                                                    //restriction of movement about "rock" border
+        if (enCount == 0) {
+            round++;
+            enCount = round;
+            System.out.println(round + " " + enCount);
+        }
+        if (getY() < 500) {                                                    //restriction of movement about "rock" border
             setY(500);
             setVelY(-getVelY());
         }
-         if(getVelY()<0){
+        if (getVelY() < 0) {
             try {
                 setPicture(new Picture("enemy_facingup_drawn.png"));
             } catch (IOException ex) {
                 Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
             }
-         }
-         else{
+        } else {
             try {
                 setPicture(new Picture("enemy_facingdown_drawn.png"));
             } catch (IOException ex) {
                 Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
             }
-         }
-         if(frameCount%60 == 0 && wc.isActive() == false){                      //refresh rate of velocity only done once every 60 frames
-        if (this.getX() > target.getX()) {
-            setVelX(-speed);
         }
-        if (this.getX() < target.getX() && wc.isActive() == false) {
-            setVelX(speed);
+        if (frameCount % 60 == 0 && wc.isActive() == false) {                      //refresh rate of velocity only done once every 60 frames
+            if (this.getX() > target.getX()) {
+                setVelX(-speed);
+            }
+            if (this.getX() < target.getX() && wc.isActive() == false) {
+                setVelX(speed);
+            }
+            if (this.getY() > target.getY() && wc.isActive() == false) {
+                setVelY(-speed);
+            }
+            if (this.getY() < target.getY() && wc.isActive() == false) {
+                setVelY(speed);
+            }
         }
-        if (this.getY() > target.getY() && wc.isActive() == false) {
-            setVelY(-speed);
-        }
-        if (this.getY() < target.getY() && wc.isActive() == false) {
-            setVelY(speed);
-        }
-        if(Math.abs(getX() - target.getX()) < 20 && Math.abs(getY() - target.getY()) < 20)
+        if (Math.abs(getX() - target.getX()) < 20 && Math.abs(getY() - target.getY()) < 20) {
             attack(target, 1);
         }
-         frameCount++;
-         
-         hb.setX(getX());                                                       //sets new positions for healthbar as enemy moves
-         hb.setY(getY() - 10);
+        frameCount++;
+        hb.setX(getX());                                                       //sets new positions for healthbar as enemy moves
+        hb.setY(getY() - 10);
     }
 }

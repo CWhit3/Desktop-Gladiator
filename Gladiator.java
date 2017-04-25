@@ -5,9 +5,7 @@
  */
 package gladiator;
 
-import basicgraphics.CollisionEventType;
 import basicgraphics.Sprite;
-import basicgraphics.SpriteCollisionEvent;
 import basicgraphics.SpriteComponent;
 import basicgraphics.images.Picture;
 import java.awt.Dimension;
